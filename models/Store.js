@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
 const { AutoIncrement } = require("../config/mongo");
+const { addDate } = require("../utils");
 const Schema = mongoose.Schema;
 
 const StoreSchema = new Schema(
   {
-    sn: { type: Number, unique: true },
+    userID: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    sn: { type: Number, unique: true, index: true },
     name: { type: String, required: true },
-    map: { type: String, default: "" },
-    image: { type: String, default: "/images/store/1.webp" },
+    logo: { type: String, default: "/images/store/default.webp" },
+    type: { type: String, required: true },
+    address: { type: String },
+    meta: { type: { title: String, description: String } },
+    expiredAt: { type: Date, default: addDate(-1) },
   },
   {
     strict: true,
