@@ -28,12 +28,14 @@ router.get("/", async (req, res) => {
 router.post("/", categoryValidation, validation, async (req, res) => {
   try {
     const { image, name, storeID } = req.body;
-    const category = await Category.create({
-      image,
-      name,
-      storeID,
-    });
-    res.json({ category });
+    for (const key in Array.from({ length: 200 })) {
+      await Category.create({
+        image,
+        name,
+        storeID,
+      });
+    }
+    res.json({ success: true });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
