@@ -2,13 +2,24 @@ const express = require("express");
 const { Category } = require("../../models");
 const { categoryValidation } = require("../../validation/category");
 const { validation } = require("../../validation");
+const { paginate, objectID } = require("../../utils");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const { storeID } = req.query;
-    const items = await Category.find({ storeID });
-    res.json({ items });
+    const { storeID, page, perPage } = req.query;
+
+    const [items, total] = await Promise.all([
+      Category.aggregate([
+        { $match: { storeID: objectID(storeID) } },
+        { $sort: { _id: -1 } },
+        ...paginate(page, perPage),
+      ]),
+      Category.countDocuments({
+        storeID,
+      }),
+    ]);
+    res.json({ items, total });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
