@@ -20,6 +20,10 @@ const StoreSchema = new Schema(
   }
 );
 
-StoreSchema.plugin(AutoIncrement, { inc_field: "sn", inc_amount: 2 });
+StoreSchema.plugin(AutoIncrement, {
+  id: "storeCounter",
+  inc_field: "sn",
+  inc_amount: 2,
+});
 
 module.exports = mongoose.model("Store", StoreSchema);

@@ -1,0 +1,55 @@
+const express = require("express");
+const { Category } = require("../../models");
+const { categoryValidation } = require("../../validation/category");
+const { validation } = require("../../validation");
+const router = express.Router();
+
+router.get("/", async (req, res) => {
+  try {
+    const { storeID } = req.query;
+    const items = await Category.find({ storeID });
+    res.json({ items });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.post("/", categoryValidation, validation, async (req, res) => {
+  try {
+    const { image, name, storeID } = req.body;
+    const category = await Category.create({
+      image,
+      name,
+      storeID,
+    });
+    res.json({ category });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.put("/", categoryValidation, validation, async (req, res) => {
+  try {
+    const { image, name, storeID, _id } = req.body;
+    const category = await Category.updateOne(
+      { _id, storeID },
+      { image, name }
+    );
+    res.json({ category });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.delete("/", async (req, res) => {
+  try {
+    const { _id, storeID } = req.query;
+    await Category.deleteOne({ _id, storeID });
+    res.json({ success: true, message: "Category deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;

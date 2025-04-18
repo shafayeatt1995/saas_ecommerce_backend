@@ -3,14 +3,7 @@ const Schema = mongoose.Schema;
 
 const ImageSchema = new Schema(
   {
-    userID: {
-      type: String,
-      required: true,
-      validate: {
-        validator: (v) => mongoose.Types.ObjectId.isValid(v) || v === "admin",
-        message: (props) => `${props.value} is not a valid user ID!`,
-      },
-    },
+    storeID: { type: Schema.Types.ObjectId, ref: "Store", required: true },
     url: { type: String, unique: true, index: true, required: true },
     key: { type: String, required: true },
     name: { type: String, required: true },
