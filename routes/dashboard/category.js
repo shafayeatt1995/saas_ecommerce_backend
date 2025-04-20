@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const { storeID, page, perPage } = req.query;
+    const storeID = req.storeID;
+    const { page, perPage } = req.query;
 
     const [items, total] = await Promise.all([
       Category.aggregate([
@@ -27,14 +28,13 @@ router.get("/", async (req, res) => {
 });
 router.post("/", categoryValidation, validation, async (req, res) => {
   try {
-    const { image, name, storeID } = req.body;
-    for (const key in Array.from({ length: 200 })) {
-      await Category.create({
-        image,
-        name,
-        storeID,
-      });
-    }
+    const storeID = req.storeID;
+    const { image, name } = req.body;
+    await Category.create({
+      image,
+      name,
+      storeID,
+    });
     res.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -43,7 +43,8 @@ router.post("/", categoryValidation, validation, async (req, res) => {
 });
 router.put("/", categoryValidation, validation, async (req, res) => {
   try {
-    const { image, name, storeID, _id } = req.body;
+    const storeID = req.storeID;
+    const { image, name, _id } = req.body;
     const category = await Category.updateOne(
       { _id, storeID },
       { image, name }
@@ -56,7 +57,8 @@ router.put("/", categoryValidation, validation, async (req, res) => {
 });
 router.delete("/", async (req, res) => {
   try {
-    const { _id, storeID } = req.query;
+    const storeID = req.storeID;
+    const { _id } = req.query;
     await Category.deleteOne({ _id, storeID });
     res.json({ success: true, message: "Category deleted successfully" });
   } catch (error) {
