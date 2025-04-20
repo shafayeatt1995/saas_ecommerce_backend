@@ -4,4 +4,5 @@ module.exports = {
   Store: require("./Store"),
   Image: require("./Image"),
   Product: require("./Product"),
+  Delivery: require("./Delivery"),
 };

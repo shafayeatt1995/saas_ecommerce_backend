@@ -9,7 +9,10 @@ const ImageSchema = new Schema(
     name: { type: String, required: true },
     size: { type: Number, required: true },
   },
-  { strict: true }
+  {
+    strict: true,
+    timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
+  }
 );
 
 module.exports = mongoose.model("Image", ImageSchema);

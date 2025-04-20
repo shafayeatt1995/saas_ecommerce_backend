@@ -9,7 +9,10 @@ const CategorySchema = new Schema(
     name: { type: String, required: true },
     image: { type: String, default: "/images/category/1.webp" },
   },
-  { strict: true }
+  {
+    strict: true,
+    timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
+  }
 );
 
 CategorySchema.plugin(AutoIncrement, {
