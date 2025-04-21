@@ -13,6 +13,16 @@ const StoreSchema = new Schema(
     address: { type: String },
     meta: { type: { title: String, description: String } },
     expiredAt: { type: Date, default: addDate(-1) },
+    legalPages: {
+      type: {
+        about: String,
+        privacy: String,
+        terms: String,
+        returnPolicy: String,
+      },
+      default: { about: "", privacy: "", terms: "", returnPolicy: "" },
+      select: false,
+    },
   },
   {
     strict: true,
