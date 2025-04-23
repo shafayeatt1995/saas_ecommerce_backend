@@ -6,4 +6,5 @@ module.exports = {
   Product: require("./Product"),
   Delivery: require("./Delivery"),
   Coupon: require("./Coupon"),
+  Payment: require("./Payment"),
 };

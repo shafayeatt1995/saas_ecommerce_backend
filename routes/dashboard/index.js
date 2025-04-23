@@ -6,5 +6,6 @@ router.use("/product", require("./product"));
 router.use("/delivery", require("./delivery"));
 router.use("/legal-pages", require("./legalPages"));
 router.use("/coupon", require("./coupon"));
+router.use("/settings", require("./settings"));
 
 module.exports = router;

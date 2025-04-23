@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { AutoIncrement } = require("../config/mongo");
 const { addDate } = require("../utils");
+const { Payment } = require(".");
 const Schema = mongoose.Schema;
 
 const StoreSchema = new Schema(
@@ -29,6 +30,14 @@ const StoreSchema = new Schema(
     timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
   }
 );
+
+StoreSchema.post("save", async function (doc) {
+  try {
+    if (doc.isNew) await Payment.create({ storeID: doc._id });
+  } catch (error) {
+    console.error(error);
+  }
+});
 
 StoreSchema.plugin(AutoIncrement, {
   id: "storeCounter",
