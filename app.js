@@ -8,7 +8,7 @@ const MongoStore = require("connect-mongo");
 const fileUpload = require("express-fileupload");
 const mongoMiddleware = require("./middleware/mongoMiddleware");
 const port = parseInt(process.env.PORT || "8000", 10);
-// require("./config/mongo");
+require("./config/mongo");
 
 app.use(
   cors({

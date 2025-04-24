@@ -67,28 +67,5 @@ router.post("/bkash", bkashValidation, validation, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router.post("/toggle-payment-status", async (req, res) => {
-  try {
-    const storeID = req.storeID;
-    const { name } = req.body;
-    const item = await Payment.findOne({ storeID });
-    if (item) {
-      const codStatus = item.cod.status;
-      const bkashStatus = item.bkash.status;
-      if (codStatus === false && bkashStatus === false) {
-        return res
-          .status(400)
-          .json({ errorMessage: "One of them must be turned on" });
-      }
-    }
-    await Payment.updateOne({ storeID }, toggle(`${name}.status`), {
-      upsert: true,
-    });
-    res.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 module.exports = router;

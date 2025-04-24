@@ -19,7 +19,6 @@ const validate = {
         if (item) {
           const codStatus = !item.cod.status;
           const bkashStatus = item.bkash.status;
-          console.log(codStatus, bkashStatus);
           if (!codStatus && !bkashStatus) {
             throw new Error(
               `Please activated "Bkash" payment then you can deactivate.`
@@ -92,7 +91,6 @@ const validate = {
         if (item) {
           const codStatus = item.cod.status;
           const bkashStatus = !item.bkash.status;
-          console.log(codStatus, bkashStatus);
           if (!codStatus && !bkashStatus) {
             throw new Error(
               `Please activated "Cash on Delivery" payment then you can deactivate.`
