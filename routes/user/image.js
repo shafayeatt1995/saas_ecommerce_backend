@@ -78,7 +78,7 @@ router.post("/", async (req, res) => {
     console.error(error);
     if (keyList) {
       await utapi.deleteFiles([keyList]);
-      await Image.deleteOne({ key: keyList });
+      await Image.findOneAndDelete({ key: keyList });
     }
     return res
       .status(500)
@@ -102,7 +102,7 @@ router.post("/delete", async (req, res) => {
 router.post("/update-name", async (req, res) => {
   try {
     const { _id, name } = req.body;
-    await Image.updateOne({ _id }, { name });
+    await Image.findOneAndUpdate({ _id }, { name });
     res.json({ success: true, message: "Image name updated successfully" });
   } catch (error) {
     console.error(error, parseError(error));

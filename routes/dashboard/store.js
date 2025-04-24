@@ -27,7 +27,7 @@ router.post("/", storeUpdateValidation, validation, async (req, res) => {
       metaTitle,
       metaDescription,
     } = req.body;
-    await Store.updateOne(
+    await Store.findOneAndUpdate(
       { storeID },
       { name, logo, type, email, phone, address, metaTitle, metaDescription },
       { new: true }

@@ -100,6 +100,24 @@ const validate = {
         return true;
       }),
   ],
+  marketingValidation: [
+    check("gtm").trim().optional().isString().withMessage("GTM is required"),
+    check("pixelID")
+      .trim()
+      .optional()
+      .isString()
+      .withMessage("Pixel ID is required"),
+    check("pixelToken")
+      .trim()
+      .optional()
+      .isString()
+      .withMessage("Pixel Token is required"),
+    check("pixelEventID")
+      .trim()
+      .optional()
+      .isString()
+      .withMessage("Pixel Event ID is required"),
+  ],
 };
 
 module.exports = validate;

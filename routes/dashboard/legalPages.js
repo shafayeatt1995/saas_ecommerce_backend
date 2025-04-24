@@ -19,7 +19,7 @@ router.post("/", async (req, res) => {
   try {
     const storeID = req.storeID;
     const { about, privacy, terms, returnPolicy } = req.body;
-    await Store.updateOne(
+    await Store.findOneAndUpdate(
       { _id: storeID },
       { $set: { legalPages: { about, privacy, terms, returnPolicy } } }
     );

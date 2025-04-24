@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { AutoIncrement } = require("../config/mongo");
 const { addDate } = require("../utils");
 const Payment = require("./Payment");
+const Marketing = require("./Marketing");
 const Schema = mongoose.Schema;
 
 const StoreSchema = new Schema(
@@ -46,12 +47,36 @@ StoreSchema.pre("save", function (next) {
 });
 
 StoreSchema.post("save", async function (doc) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     if (doc._wasNew) {
-      await Payment.create({ storeID: doc._id });
+      await Payment.create({ storeID: doc._id }, { session });
+      await Marketing.create({ storeID: doc._id }, { session });
     }
+    await session.commitTransaction();
+    await session.endSession();
   } catch (error) {
     console.error("Error creating Payment for new store:", error);
+    await session.abortTransaction();
+    await session.endSession();
+  }
+});
+
+StoreSchema.post("findOneAndDelete", async function (doc) {
+  if (!doc) return;
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    await Payment.findOneAndDelete({ storeID: doc._id }, { session });
+    await Marketing.findOneAndDelete({ storeID: doc._id }, { session });
+
+    await session.commitTransaction();
+    await session.endSession();
+  } catch (err) {
+    console.error("Error deleting associated Payment & Marketing:", err);
+    await session.abortTransaction();
+    await session.endSession();
   }
 });
 

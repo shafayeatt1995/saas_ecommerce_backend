@@ -144,7 +144,7 @@ router.put("/", productValidation, validation, async (req, res) => {
     const findProduct = await Product.findOne({ slug, _id: { $ne: _id } });
     if (findProduct) slug = `${slug}-${randomKey()}`;
 
-    await Product.updateOne({
+    await Product.findOneAndUpdate({
       categoryID,
       name,
       slug,
@@ -173,7 +173,7 @@ router.delete("/", async (req, res) => {
   try {
     const { _id, type } = req.authUser;
     const { _id: id } = req.query;
-    await Product.deleteOne({
+    await Product.findOneAndDelete({
       userID: type === "admin" ? "admin" : _id,
       _id: id,
     });

@@ -41,7 +41,7 @@ router.put("/", deliveryValidation, validation, async (req, res) => {
   try {
     const storeID = req.storeID;
     const { address, charge, _id } = req.body;
-    const delivery = await Delivery.updateOne(
+    const delivery = await Delivery.findOneAndUpdate(
       { _id, storeID },
       { address, charge }
     );
@@ -55,7 +55,7 @@ router.delete("/", async (req, res) => {
   try {
     const storeID = req.storeID;
     const { _id } = req.query;
-    await Delivery.deleteOne({ _id, storeID });
+    await Delivery.findOneAndDelete({ _id, storeID });
     res.json({ success: true, message: "Delivery deleted successfully" });
   } catch (error) {
     console.error(error);

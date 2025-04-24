@@ -45,7 +45,7 @@ router.put("/", categoryValidation, validation, async (req, res) => {
   try {
     const storeID = req.storeID;
     const { image, name, _id } = req.body;
-    const category = await Category.updateOne(
+    const category = await Category.findOneAndUpdate(
       { _id, storeID },
       { image, name }
     );
@@ -59,7 +59,7 @@ router.delete("/", async (req, res) => {
   try {
     const storeID = req.storeID;
     const { _id } = req.query;
-    await Category.deleteOne({ _id, storeID });
+    await Category.findOneAndDelete({ _id, storeID });
     res.json({ success: true, message: "Category deleted successfully" });
   } catch (error) {
     console.error(error);

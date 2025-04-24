@@ -7,4 +7,5 @@ module.exports = {
   Delivery: require("./Delivery"),
   Coupon: require("./Coupon"),
   Payment: require("./Payment"),
+  Marketing: require("./Marketing"),
 };

@@ -71,7 +71,7 @@ router.put("/", couponValidation, validation, async (req, res) => {
       expireDate,
       _id,
     } = req.body;
-    await Coupon.updateOne(
+    await Coupon.findOneAndUpdate(
       { _id, storeID },
       {
         code,
@@ -95,7 +95,7 @@ router.delete("/", async (req, res) => {
   try {
     const storeID = req.storeID;
     const { _id } = req.query;
-    await Coupon.deleteOne({ _id, storeID });
+    await Coupon.findOneAndDelete({ _id, storeID });
     res.json({ success: true, message: "Coupon deleted successfully" });
   } catch (error) {
     console.error(error);
@@ -106,7 +106,7 @@ router.post("/toggle-status", async (req, res) => {
   try {
     const storeID = req.storeID;
     const { _id } = req.body;
-    await Coupon.updateOne({ _id, storeID }, toggle("status"));
+    await Coupon.findOneAndUpdate({ _id, storeID }, toggle("status"));
     res.json({ success: true, message: "Status toggled successfully" });
   } catch (error) {
     console.error(error);
