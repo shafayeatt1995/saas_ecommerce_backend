@@ -1,5 +1,6 @@
 const { check } = require("express-validator");
 const { Payment } = require("../models");
+const { isValidURL } = require("../utils");
 
 const validate = {
   codValidation: [
@@ -101,7 +102,7 @@ const validate = {
       }),
   ],
   marketingValidation: [
-    check("gtm").trim().optional().isString().withMessage("GTM is required"),
+    check("gtm").trim().optional().isString().withMessage("GTM ID is required"),
     check("pixelID")
       .trim()
       .optional()
@@ -117,6 +118,140 @@ const validate = {
       .optional()
       .isString()
       .withMessage("Pixel Event ID is required"),
+    check("analytics")
+      .trim()
+      .optional()
+      .isString()
+      .withMessage("Analytics ID is required"),
+  ],
+  whatsappValidation: [
+    check("whatsapp")
+      .trim()
+      .isString()
+      .isLength({ min: 1 })
+      .withMessage("Whatsapp number is required"),
+  ],
+  socialLinkValidation: [
+    check("facebook")
+      .trim()
+      .isString()
+      .withMessage("Facebook is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Facebook should be a valid URL or empty");
+      }),
+    check("instagram")
+      .trim()
+      .isString()
+      .withMessage("Instagram is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Instagram should be a valid URL or empty");
+      }),
+    check("linkedin")
+      .trim()
+      .isString()
+      .withMessage("Linkedin is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Linkedin should be a valid URL or empty");
+      }),
+    check("twitter")
+      .trim()
+      .isString()
+      .withMessage("Twitter is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Twitter should be a valid URL or empty");
+      }),
+    check("youtube")
+      .trim()
+      .isString()
+      .withMessage("Youtube is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Youtube should be a valid URL or empty");
+      }),
+    check("tiktok")
+      .trim()
+      .isString()
+      .withMessage("Tiktok is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Tiktok should be a valid URL or empty");
+      }),
+    check("discord")
+      .trim()
+      .isString()
+      .withMessage("Discord is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Discord should be a valid URL or empty");
+      }),
+    check("telegram")
+      .trim()
+      .isString()
+      .withMessage("Telegram is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Telegram should be a valid URL or empty");
+      }),
+    check("daraz")
+      .trim()
+      .isString()
+      .withMessage("Daraz is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Daraz should be a valid URL or empty");
+      }),
+    check("amazon")
+      .trim()
+      .isString()
+      .withMessage("Amazon is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Amazon should be a valid URL or empty");
+      }),
+    check("walmart")
+      .trim()
+      .isString()
+      .withMessage("Walmart is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Walmart should be a valid URL or empty");
+      }),
+    check("snapchat")
+      .trim()
+      .isString()
+      .withMessage("Snapchat is required")
+      .custom((value) => {
+        if (value === "" || isValidURL(value)) {
+          return true;
+        }
+        throw new Error("Snapchat should be a valid URL or empty");
+      }),
   ],
 };
 

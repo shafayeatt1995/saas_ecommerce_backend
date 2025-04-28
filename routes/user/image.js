@@ -41,18 +41,18 @@ router.post("/", async (req, res) => {
     const { store: storeID } = req.headers;
     const imageBuffer = req.files.image.data;
     const metadata = await sharp(imageBuffer).metadata();
-    const shouldResize = metadata.width > 1000 || metadata.height > 1000;
+    const shouldResize = metadata.width > 2000 || metadata.height > 2000;
     const webpBuffer = shouldResize
       ? await sharp(imageBuffer)
           .resize({
-            width: 1000,
-            height: 1000,
+            width: 2000,
+            height: 2000,
             fit: sharp.fit.inside,
             withoutEnlargement: true,
           })
-          .webp({ quality: 80 })
+          .webp({ quality: 90 })
           .toBuffer()
-      : await sharp(imageBuffer).webp({ quality: 80 }).toBuffer();
+      : await sharp(imageBuffer).webp({ quality: 90 }).toBuffer();
 
     const filename = `${randomKey(10)}`;
     const blob = new Blob([webpBuffer], {

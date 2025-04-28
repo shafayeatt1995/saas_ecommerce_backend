@@ -5,12 +5,12 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema(
   {
     storeID: { type: mongoose.Types.ObjectId, ref: "Store", required: true },
-    categoryID: {
-      type: mongoose.Types.ObjectId,
+    categoryIDs: {
+      type: [mongoose.Types.ObjectId],
       ref: "Category",
-      default: null,
+      default: () => [],
     },
-    sn: { type: Number, unique: true },
+    id: { type: Number, unique: true },
     name: { type: String, required: true },
     slug: { type: String, unique: true, lowercase: true, required: true },
     price: { type: Number, required: true },
@@ -21,7 +21,9 @@ const ProductSchema = new Schema(
       type: [
         {
           name: String,
-          options: [{ title: String, price: Number, stock: Boolean }],
+          options: [
+            { title: String, price: Number, discount: Number, stock: Boolean },
+          ],
         },
       ],
       default: [],
@@ -43,8 +45,8 @@ const ProductSchema = new Schema(
 
 ProductSchema.plugin(AutoIncrement, {
   id: "productCounter",
-  inc_field: "sn",
-  inc_amount: 2,
+  inc_field: "id",
+  inc_amount: 1,
 });
 
 module.exports = mongoose.model("Product", ProductSchema);

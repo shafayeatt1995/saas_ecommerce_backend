@@ -12,7 +12,7 @@ require("./config/mongo");
 
 app.use(
   cors({
-    origin: [process.env.BASE_URL, "http://localhost:8080"],
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
   })
 );

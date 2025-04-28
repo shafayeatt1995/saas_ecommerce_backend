@@ -5,6 +5,7 @@ const isStore = require("../middleware/isStore");
 const router = express.Router();
 
 router.use("/auth", require("./auth"));
+router.use("/store", require("./store"));
 
 router.use(isAuthenticated);
 router.use("/user", require("./user"));

@@ -1,4 +1,5 @@
 const { check } = require("express-validator");
+const { Product } = require("../models");
 
 const validate = {
   productValidation: [
@@ -8,6 +9,20 @@ const validate = {
       .isString()
       .withMessage("Category is required"),
     check("name").trim().isLength({ min: 1 }).withMessage("Name is required"),
+    check("slug")
+      .trim()
+      .isLength({ min: 1 })
+      .withMessage("Slug is required")
+      .custom(async (value, { req }) => {
+        const { _id } = req.body;
+        const matchQuery = { slug: value };
+        if (_id) {
+          matchQuery._id = { $ne: _id };
+        }
+        const product = await Product.findOne(matchQuery);
+        if (product) throw new Error("Slug already exists");
+        return true;
+      }),
     check("price")
       .trim()
       .isNumeric()
@@ -36,9 +51,15 @@ const validate = {
       .withMessage("Discount Status is required"),
     check("discountPrice")
       .trim()
-      .optional()
       .isNumeric()
-      .withMessage("Discount Price is required"),
+      .withMessage("Discount Price is required")
+      .custom((value, { req }) => {
+        if (req.body.discountStatus == true) {
+          if (value > 0) return true;
+          throw new Error("Discount Price should be greater than 0");
+        }
+        return true;
+      }),
     check("thumbnail")
       .trim()
       .isString()

@@ -7,6 +7,7 @@ const {
   hasOne,
   randomKey,
   objectID,
+  hasMany,
 } = require("../../utils");
 const { productValidation } = require("../../validation/product");
 const { validation } = require("../../validation");
@@ -30,7 +31,6 @@ router.get("/", async (req, res) => {
       Product.aggregate([
         { $match: { storeID: objectID(storeID) } },
         ...paginate(page, perPage),
-        ...hasOne("categoryID", "categories", "category", ["name"]),
       ]),
       Product.countDocuments({ storeID: objectID(storeID) }),
     ]);
@@ -42,10 +42,10 @@ router.get("/", async (req, res) => {
 });
 router.get("/single-product", async (req, res) => {
   try {
-    const { _id, type } = req.authUser;
+    const storeID = req.storeID;
     const { id } = req.query;
     const item = await Product.findOne({
-      userID: type === "admin" ? "admin" : _id,
+      storeID,
       _id: id,
     });
     res.json({ item });
@@ -60,8 +60,9 @@ router.post("/", productValidation, validation, async (req, res) => {
     const storeID = req.storeID;
 
     const {
-      categoryID,
+      categoryIDs,
       name,
+      slug,
       price,
       status,
       shortDescription,
@@ -82,13 +83,9 @@ router.post("/", productValidation, validation, async (req, res) => {
       return res.status(404).json({ error: "You are not authorized" });
     }
 
-    let slug = stringSlug(name);
-    const findProduct = await Product.findOne({ slug });
-    if (findProduct) slug = `${slug}-${randomKey()}`;
-
     await Product.create({
       storeID,
-      categoryID: categoryID || null,
+      categoryIDs,
       name,
       slug,
       price,
@@ -118,7 +115,7 @@ router.put("/", productValidation, validation, async (req, res) => {
 
     let {
       _id,
-      categoryID,
+      categoryIDs,
       name,
       slug,
       price,
@@ -141,27 +138,27 @@ router.put("/", productValidation, validation, async (req, res) => {
       return res.status(404).json({ error: "You are not authorized" });
     }
 
-    const findProduct = await Product.findOne({ slug, _id: { $ne: _id } });
-    if (findProduct) slug = `${slug}-${randomKey()}`;
-
-    await Product.findOneAndUpdate({
-      categoryID,
-      name,
-      slug,
-      price,
-      status,
-      shortDescription,
-      description,
-      variation,
-      video,
-      stock,
-      discountStatus,
-      discountPrice,
-      thumbnail,
-      gallery,
-      metaTitle,
-      metaDescription,
-    });
+    await Product.findOneAndUpdate(
+      { _id },
+      {
+        categoryIDs,
+        name,
+        slug,
+        price,
+        status,
+        shortDescription,
+        description,
+        variation,
+        video,
+        stock,
+        discountStatus,
+        discountPrice,
+        thumbnail,
+        gallery,
+        metaTitle,
+        metaDescription,
+      }
+    );
     res.json({ success: true });
   } catch (error) {
     console.error(error, parseError(error));
@@ -171,11 +168,11 @@ router.put("/", productValidation, validation, async (req, res) => {
 
 router.delete("/", async (req, res) => {
   try {
-    const { _id, type } = req.authUser;
-    const { _id: id } = req.query;
+    const storeID = req.storeID;
+    const { id: _id } = req.query;
     await Product.findOneAndDelete({
-      userID: type === "admin" ? "admin" : _id,
-      _id: id,
+      _id,
+      storeID,
     });
     res.json({ success: true });
   } catch (error) {
