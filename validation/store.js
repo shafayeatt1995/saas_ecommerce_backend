@@ -34,8 +34,8 @@ const validate = {
     check("phone")
       .trim()
       .optional()
-      .isString()
-      .withMessage("Phone is required"),
+      .isNumeric()
+      .withMessage("Phone should be a valid number"),
     check("address")
       .trim()
       .optional()

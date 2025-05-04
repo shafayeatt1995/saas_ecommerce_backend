@@ -30,6 +30,7 @@ router.get("/", async (req, res) => {
     const [items, total] = await Promise.all([
       Product.aggregate([
         { $match: { storeID: objectID(storeID) } },
+        { $sort: { _id: -1 } },
         ...paginate(page, perPage),
       ]),
       Product.countDocuments({ storeID: objectID(storeID) }),

@@ -8,4 +8,5 @@ module.exports = {
   Coupon: require("./Coupon"),
   Payment: require("./Payment"),
   Marketing: require("./Marketing"),
+  SubCategory: require("./SubCategory"),
 };
