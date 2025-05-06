@@ -10,6 +10,11 @@ const ProductSchema = new Schema(
       ref: "Category",
       default: () => [],
     },
+    subCategoryIDs: {
+      type: [mongoose.Types.ObjectId],
+      ref: "SubCategory",
+      default: () => [],
+    },
     id: { type: Number, unique: true },
     name: { type: String, required: true },
     slug: { type: String, unique: true, lowercase: true, required: true },

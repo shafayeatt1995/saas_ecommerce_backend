@@ -1,5 +1,5 @@
 const express = require("express");
-const { Category, Product, Store } = require("../../models");
+const { Category, Product, Store, SubCategory } = require("../../models");
 const {
   parseError,
   stringSlug,
@@ -17,6 +17,27 @@ router.get("/category", async (req, res) => {
   try {
     const storeID = req.storeID;
     const items = await Category.find({ storeID });
+    res.json({ items });
+  } catch (error) {
+    console.error(error, parseError(error));
+    return res.status(500).json(parseError(error));
+  }
+});
+router.post("/sub-category", async (req, res) => {
+  try {
+    const storeID = req.storeID;
+    const { categoryIDs } = req.body;
+    const categoryObjectIds = categoryIDs.map((id) => objectID(id));
+
+    const items = await SubCategory.aggregate([
+      {
+        $match: {
+          storeID: objectID(storeID),
+          categoryID: { $in: categoryObjectIds },
+        },
+      },
+      ...hasOne("categoryID", "categories", "category", ["name"]),
+    ]);
     res.json({ items });
   } catch (error) {
     console.error(error, parseError(error));
@@ -62,6 +83,7 @@ router.post("/", productValidation, validation, async (req, res) => {
 
     const {
       categoryIDs,
+      subCategoryIDs,
       name,
       slug,
       price,
@@ -87,6 +109,7 @@ router.post("/", productValidation, validation, async (req, res) => {
     await Product.create({
       storeID,
       categoryIDs,
+      subCategoryIDs,
       name,
       slug,
       price,
@@ -117,6 +140,7 @@ router.put("/", productValidation, validation, async (req, res) => {
     let {
       _id,
       categoryIDs,
+      subCategoryIDs,
       name,
       slug,
       price,
@@ -143,6 +167,7 @@ router.put("/", productValidation, validation, async (req, res) => {
       { _id },
       {
         categoryIDs,
+        subCategoryIDs,
         name,
         slug,
         price,

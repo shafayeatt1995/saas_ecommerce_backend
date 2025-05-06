@@ -3,11 +3,16 @@ const { Product } = require("../models");
 
 const validate = {
   productValidation: [
-    check("categoryID")
+    check("categoryIDs")
       .trim()
       .optional()
-      .isString()
+      .isArray()
       .withMessage("Category is required"),
+    check("subCategoryIDs")
+      .trim()
+      .optional()
+      .isArray()
+      .withMessage("Sub Category is required"),
     check("name").trim().isLength({ min: 1 }).withMessage("Name is required"),
     check("slug")
       .trim()
