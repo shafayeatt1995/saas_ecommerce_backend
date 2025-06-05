@@ -18,9 +18,8 @@ const validate = {
         const storeID = req.storeID;
         const item = await Payment.findOne({ storeID });
         if (item) {
-          const codStatus = !item.cod.status;
           const bkashStatus = item.bkash.status;
-          if (!codStatus && !bkashStatus) {
+          if (value == "false" && !bkashStatus) {
             throw new Error(
               `Please activated "Bkash" payment then you can deactivate.`
             );
@@ -61,7 +60,7 @@ const validate = {
       .isString()
       .isLength({ min: 1 })
       .withMessage("Type is required")
-      .isIn(["percentage", "fixed", "full", "delivery"])
+      .isIn(["percentage", "fixed", "full", "delivery", "none"])
       .withMessage("Type is not valid"),
     check("value")
       .trim()
@@ -91,8 +90,7 @@ const validate = {
         const item = await Payment.findOne({ storeID });
         if (item) {
           const codStatus = item.cod.status;
-          const bkashStatus = !item.bkash.status;
-          if (!codStatus && !bkashStatus) {
+          if (value == "false" && !codStatus) {
             throw new Error(
               `Please activated "Cash on Delivery" payment then you can deactivate.`
             );

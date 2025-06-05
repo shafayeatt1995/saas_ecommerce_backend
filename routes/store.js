@@ -1,8 +1,38 @@
 const express = require("express");
-const { Store, Marketing, Product, Category } = require("../models");
-const { objectID, paginate } = require("../utils");
+const {
+  Store,
+  Marketing,
+  Product,
+  Category,
+  Coupon,
+  Delivery,
+  Payment,
+} = require("../models");
+const { objectID, paginate, sendError, parseError } = require("../utils");
 const { productCardPreset, categoryPreset } = require("../utils/preset");
+const { validateOrder } = require("../validation/order");
+const { validation } = require("../validation");
 const router = express.Router();
+
+const getPrice = (item = []) =>
+  item?.variation.reduce((acc, variation) => {
+    return acc + +variation.options?.price || 0;
+  }, +item.price || 0) * (item?.quantity || 1);
+const getDiscount = (item = []) =>
+  item?.variation.reduce(
+    (acc, variation) => {
+      return acc + +variation.options?.discount || 0;
+    },
+    item?.discountStatus ? +item?.discountPrice || 0 : 0
+  ) * (item?.quantity || 1);
+const subtotal = (items = []) =>
+  items.reduce((acc, item) => {
+    return acc + getPrice(item);
+  }, 0);
+const subDiscount = (items = []) =>
+  items.reduce((acc, item) => {
+    return acc + getDiscount(item);
+  }, 0);
 
 router.get("/fetch", async (req, res) => {
   try {
@@ -60,10 +90,10 @@ router.get("/fetch-home", async (req, res) => {
 });
 router.get("/fetch-product", async (req, res) => {
   try {
-    const { storeID, productSlug } = req.query;
+    const { storeID, slug } = req.query;
     const product = await Product.findOne({
-      storeID,
-      slug: productSlug,
+      storeID: objectID(storeID),
+      slug,
       status: true,
     });
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -123,6 +153,200 @@ router.post("/fetch-category-product", async (req, res) => {
     ]);
 
     res.json({ products, total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.post("/apply-coupon", async (req, res) => {
+  try {
+    const { storeID, coupon, items, total, discount } = req.body;
+    const findCoupon = await Coupon.findOne({
+      storeID: objectID(storeID),
+      code: coupon,
+      status: true,
+      expireDate: { $gte: new Date() },
+    });
+
+    if (!findCoupon) sendError({ message: "Invalid coupon" });
+
+    const products = await Product.find({
+      _id: { $in: items.map((item) => objectID(item._id)) },
+    })
+      .select({
+        price: 1,
+        variation: 1,
+        discountStatus: 1,
+        discountPrice: 1,
+      })
+      .lean();
+
+    const newProducts = products.map((product) => {
+      const item = items.find(
+        (item) => item._id.toString() === product._id.toString()
+      );
+      const updateVariant = product.variation.map((variation) => {
+        const newVariation = variation.options.find((option) => {
+          const findItem = item.variation.find(
+            (v) => v._id.toString() === variation._id.toString()
+          );
+          return option._id.toString() === findItem.option._id.toString();
+        });
+        return { ...variation, options: newVariation };
+      });
+      return { ...product, variation: updateVariant, quantity: item.quantity };
+    });
+    const newTotal = subtotal(newProducts);
+    const newDiscount = subDiscount(newProducts);
+    const grandTotal = newTotal - newDiscount;
+
+    if (newTotal !== total || newDiscount !== discount)
+      sendError({ message: "Invalid coupon" });
+    if (findCoupon.minPurchase && grandTotal < findCoupon.minPurchaseAmount)
+      sendError({
+        message: `Minimum order amount ${findCoupon.minPurchaseAmount} taka to use this coupon`,
+      });
+    let totalDiscount = 0;
+    if (findCoupon.type === "percent") {
+      const discountAmount = Math.round(
+        (grandTotal * findCoupon.discountPercent) / 100
+      );
+      totalDiscount = findCoupon.maxDiscount
+        ? discountAmount > findCoupon.maxDiscountAmount
+          ? findCoupon.maxDiscountAmount
+          : discountAmount
+        : discountAmount;
+    } else if (findCoupon.type === "amount") {
+      totalDiscount =
+        findCoupon.maxDiscount &&
+        findCoupon.discountAmount > findCoupon.maxDiscountAmount
+          ? findCoupon.maxDiscountAmount
+          : findCoupon.discountAmount;
+    }
+
+    res.json({ totalDiscount });
+  } catch (error) {
+    console.error(error);
+    res.status(422).json(parseError(error));
+  }
+});
+router.post("/cart-validate-items", async (req, res) => {
+  try {
+    const { items } = req.body;
+    const products = await Product.find({
+      _id: { $in: items },
+    }).select({ _id: 1, updatedAt: 1 });
+    res.json({ products });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.get("/checkout-info", async (req, res) => {
+  try {
+    const { storeID } = req.query;
+    const addresses = await Delivery.find({ storeID });
+    const findPayment = await Payment.findOne({ storeID });
+    const payment = {
+      cod: findPayment.cod.status
+        ? { ...findPayment.cod, status: undefined }
+        : undefined,
+      bkash: findPayment.bkash.status
+        ? { ...findPayment.bkash, status: undefined }
+        : undefined,
+    };
+    res.json({ addresses, payment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.post("/create-order", validateOrder, validation, async (req, res) => {
+  try {
+    const {
+      additionalInfo,
+      address,
+      district,
+      extraInfo,
+      name,
+      paymentMethod,
+      phone,
+      shippingAddress,
+    } = req.body;
+    const { storeID, coupon, couponDiscount, discount, items, total } =
+      extraInfo;
+    console.log(req.body);
+
+    const findCoupon = await Coupon.findOne({
+      storeID: objectID(storeID),
+      code: coupon,
+      status: true,
+      expireDate: { $gte: new Date() },
+    });
+
+    if (coupon) {
+      if (!findCoupon) sendError({ message: "Invalid coupon" });
+
+      const products = await Product.find({
+        _id: { $in: items.map((item) => objectID(item._id)) },
+      })
+        .select({
+          price: 1,
+          variation: 1,
+          discountStatus: 1,
+          discountPrice: 1,
+        })
+        .lean();
+
+      const newProducts = products.map((product) => {
+        const item = items.find(
+          (item) => item._id.toString() === product._id.toString()
+        );
+        const updateVariant = product.variation.map((variation) => {
+          const newVariation = variation.options.find((option) => {
+            const findItem = item.variation.find(
+              (v) => v._id.toString() === variation._id.toString()
+            );
+            return option._id.toString() === findItem.option._id.toString();
+          });
+          return { ...variation, options: newVariation };
+        });
+        return {
+          ...product,
+          variation: updateVariant,
+          quantity: item.quantity,
+        };
+      });
+      const newTotal = subtotal(newProducts);
+      const newDiscount = subDiscount(newProducts);
+      const grandTotal = newTotal - newDiscount;
+
+      if (newTotal !== total || newDiscount !== discount)
+        sendError({ message: "Invalid coupon" });
+      if (findCoupon.minPurchase && grandTotal < findCoupon.minPurchaseAmount)
+        sendError({
+          message: `Minimum order amount ${findCoupon.minPurchaseAmount} taka to use this coupon`,
+        });
+      let totalDiscount = 0;
+      if (findCoupon.type === "percent") {
+        const discountAmount = Math.round(
+          (grandTotal * findCoupon.discountPercent) / 100
+        );
+        totalDiscount = findCoupon.maxDiscount
+          ? discountAmount > findCoupon.maxDiscountAmount
+            ? findCoupon.maxDiscountAmount
+            : discountAmount
+          : discountAmount;
+      } else if (findCoupon.type === "amount") {
+        totalDiscount =
+          findCoupon.maxDiscount &&
+          findCoupon.discountAmount > findCoupon.maxDiscountAmount
+            ? findCoupon.maxDiscountAmount
+            : findCoupon.discountAmount;
+      }
+    }
+
+    res.json({ success: true });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

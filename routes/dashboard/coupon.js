@@ -1,6 +1,6 @@
 const express = require("express");
 const { validation } = require("../../validation");
-const { paginate, objectID, toggle } = require("../../utils");
+const { paginate, objectID, toggle, endDate } = require("../../utils");
 const { Coupon } = require("../../models");
 const { couponValidation } = require("../../validation/coupon");
 const router = express.Router();
@@ -47,7 +47,7 @@ router.post("/", couponValidation, validation, async (req, res) => {
       maxDiscountAmount,
       minPurchase,
       minPurchaseAmount,
-      expireDate,
+      expireDate: endDate(expireDate),
       storeID,
     });
     res.json({ success: true });
@@ -82,7 +82,7 @@ router.put("/", couponValidation, validation, async (req, res) => {
         maxDiscountAmount,
         minPurchase,
         minPurchaseAmount,
-        expireDate,
+        expireDate: endDate(expireDate),
       }
     );
     res.json({ success: true });

@@ -7,14 +7,14 @@ const mongo = {
     let attempts = 0;
 
     if (mongoose.connection.readyState === 1) {
-      console.log("MongoDB is already connected.");
+      // console.log("MongoDB is already connected.");
       return;
     }
 
     while (attempts < maxRetries) {
       try {
         await mongoose.connect(process.env.MONGO_URL, { autoIndex: true });
-        console.log("MongoDB Connected");
+        // console.log("MongoDB Connected");
         return;
       } catch (error) {
         attempts++;
